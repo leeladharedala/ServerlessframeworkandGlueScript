@@ -1,0 +1,69 @@
+Resources:
+    GlueETLJobUsers:
+      Type: AWS::Glue::Job
+      Properties:
+        Name: GlueFakeProfilesJob
+        Role: GlueExecutionRole  
+        Command:
+          Name: glueetl
+          ScriptLocation: s3://${self:custom.s3BucketName}/code/generate_users.py
+          PythonVersion: "3"
+        DefaultArguments:
+          "--job-language": "python"
+          "--extra-py-files": s3://${self:custom.s3BucketName}/dependencies/Faker-36.1.0-py3-none-any.whl
+          "--S3_BUCKET": "${self:custom.s3BucketName}"
+          "--S3_OUTPUT_PATH": "output/users"
+        GlueVersion: "5.0"
+        WorkerType: G.1X
+        NumberOfWorkers: 10
+
+    GlueETLJobTransactions:
+      Type: AWS::Glue::Job
+      Properties:
+        Name: GlueGenerateTransactionsJob
+        Role: GlueExecutionRole  
+        Command:
+          Name: glueetl
+          ScriptLocation: s3://${self:custom.s3BucketName}/code/generate_transactions.py
+        DefaultArguments:
+          "--job-language": "python"
+          "--extra-py-files": s3://${self:custom.s3BucketName}/dependencies/Faker-36.1.0-py3-none-any.whl
+          "--S3_BUCKET": "${self:custom.s3BucketName}"
+          "--S3_OUTPUT_PATH": "output/transactions"
+        GlueVersion: "5.0"
+        WorkerType: G.1X
+        NumberOfWorkers: 10
+
+    # GlueETLJobTransactionSequences:
+    #   Type: AWS::Glue::Job
+    #   Properties:
+    #     Name: GlueGenerateTransactionSequencesJob
+    #     Role: GlueExecutionRole  
+    #     Command:
+    #       Name: glueetl
+    #       ScriptLocation: s3://${self:custom.s3BucketName}/code/generate_transaction_sequences.py
+    #     DefaultArguments:
+    #       "--job-language": "python"
+    #       "--extra-py-files": s3://${self:custom.s3BucketName}/dependencies/Faker-36.1.0-py3-none-any.whl
+    #       "--S3_BUCKET": "${self:custom.s3BucketName}"
+    #       "--S3_OUTPUT_PATH": "output/transactionsequences"
+    #     GlueVersion: "5.0"
+    #     WorkerType: G.1X
+    #     NumberOfWorkers: 10
+    
+    GlueETLJobTransactionSequencesAmt:
+      Type: AWS::Glue::Job
+      Properties:
+        Name: GlueGenerateTransactionSequencesAmtJob
+        Role: GlueExecutionRole  
+        Command:
+          Name: glueetl
+          ScriptLocation: s3://${self:custom.s3BucketName}/code/generate_trnasaction_sequences_amt.py
+        DefaultArguments:
+          "--job-language": "python"
+          "--extra-py-files": s3://${self:custom.s3BucketName}/dependencies/Faker-36.1.0-py3-none-any.whl
+          "--S3_BUCKET": "${self:custom.s3BucketName}"
+          "--S3_OUTPUT_PATH": "output/transactionsequencesamt"
+        GlueVersion: "5.0"
+        WorkerType: G.1X
+        NumberOfWorkers: 10

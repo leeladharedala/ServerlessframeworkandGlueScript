@@ -1,0 +1,40 @@
+org: deftsquad9
+app: gluejob
+service: glue-etl-job1
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+  iam:
+    role:
+      name: GlueExecutionRole  
+      statements:
+        - Effect: Allow
+          Action:
+            - "s3:*"
+          Resource:
+            - "arn:aws:s3:::${self:custom.s3BucketName}"
+            - "arn:aws:s3:::${self:custom.s3BucketName}/*"
+        - Effect: Allow
+          Action:
+            - "glue:*"
+          Resource: "*"
+
+resources:
+  - ${file(resources/s3-bucket.yml)}
+  - ${file(resources/iam-role.yml)}
+  - ${file(resources/glue-job.yml)}
+
+plugins:
+  - serverless-s3-sync
+
+custom:
+  s3BucketName: glue-etl-bucket9  # Variable for S3 bucket
+  s3Sync:
+    - bucketName: ${self:custom.s3BucketName}
+      localDir: GlueScripts  
+      bucketPrefix: code/
+    - bucketName: ${self:custom.s3BucketName}
+      localDir: dependencies  
+      bucketPrefix: dependencies/

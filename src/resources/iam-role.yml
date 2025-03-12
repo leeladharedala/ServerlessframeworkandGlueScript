@@ -1,0 +1,27 @@
+Resources:
+  GlueExecutionRole:
+    Type: AWS::IAM::Role  
+    Properties:
+      RoleName: GlueExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: GlueJobS3AccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:*"
+                Resource:
+                  - "arn:aws:s3:::${self:custom.s3BucketName}"
+                  - "arn:aws:s3:::${self:custom.s3BucketName}/*"
+              - Effect: Allow
+                Action:
+                  - "glue:*"
+                Resource: "*"

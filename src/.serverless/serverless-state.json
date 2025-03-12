@@ -1,0 +1,330 @@
+{
+  "service": {
+    "service": "glue-etl-job1",
+    "serviceObject": {
+      "name": "glue-etl-job1"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "python3.8",
+      "region": "us-east-1",
+      "iam": {
+        "role": {
+          "name": "GlueExecutionRole",
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:*"
+              ],
+              "Resource": [
+                "arn:aws:s3:::glue-etl-bucket9",
+                "arn:aws:s3:::glue-etl-bucket9/*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "glue:*"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      },
+      "stage": "dev",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "GlueS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketName": "glue-etl-bucket9"
+            }
+          },
+          "GlueExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "RoleName": "GlueExecutionRole",
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": "glue.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": "GlueJobS3AccessPolicy",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "s3:*"
+                        ],
+                        "Resource": [
+                          "arn:aws:s3:::glue-etl-bucket9",
+                          "arn:aws:s3:::glue-etl-bucket9/*"
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "glue:*"
+                        ],
+                        "Resource": "*"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "GlueETLJobUsers": {
+            "Type": "AWS::Glue::Job",
+            "Properties": {
+              "Name": "GlueFakeProfilesJob",
+              "Role": "GlueExecutionRole",
+              "Command": {
+                "Name": "glueetl",
+                "ScriptLocation": "s3://glue-etl-bucket9/code/generate_users.py",
+                "PythonVersion": "3"
+              },
+              "DefaultArguments": {
+                "--job-language": "python",
+                "--extra-py-files": "s3://glue-etl-bucket9/dependencies/Faker-36.1.0-py3-none-any.whl",
+                "--S3_BUCKET": "glue-etl-bucket9",
+                "--S3_OUTPUT_PATH": "output/users"
+              },
+              "GlueVersion": "5.0",
+              "WorkerType": "G.1X",
+              "NumberOfWorkers": 10
+            }
+          },
+          "GlueETLJobTransactions": {
+            "Type": "AWS::Glue::Job",
+            "Properties": {
+              "Name": "GlueGenerateTransactionsJob",
+              "Role": "GlueExecutionRole",
+              "Command": {
+                "Name": "glueetl",
+                "ScriptLocation": "s3://glue-etl-bucket9/code/generate_transactions.py"
+              },
+              "DefaultArguments": {
+                "--job-language": "python",
+                "--extra-py-files": "s3://glue-etl-bucket9/dependencies/Faker-36.1.0-py3-none-any.whl",
+                "--S3_BUCKET": "glue-etl-bucket9",
+                "--S3_OUTPUT_PATH": "output/transactions"
+              },
+              "GlueVersion": "5.0",
+              "WorkerType": "G.1X",
+              "NumberOfWorkers": 10
+            }
+          },
+          "GlueETLJobTransactionSequencesAmt": {
+            "Type": "AWS::Glue::Job",
+            "Properties": {
+              "Name": "GlueGenerateTransactionSequencesAmtJob",
+              "Role": "GlueExecutionRole",
+              "Command": {
+                "Name": "glueetl",
+                "ScriptLocation": "s3://glue-etl-bucket9/code/generate_trnasaction_sequences_amt.py"
+              },
+              "DefaultArguments": {
+                "--job-language": "python",
+                "--extra-py-files": "s3://glue-etl-bucket9/dependencies/Faker-36.1.0-py3-none-any.whl",
+                "--S3_BUCKET": "glue-etl-bucket9",
+                "--S3_OUTPUT_PATH": "output/transactionsequencesamt"
+              },
+              "GlueVersion": "5.0",
+              "WorkerType": "G.1X",
+              "NumberOfWorkers": 10
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-us-east-1-560fa20c-2004",
+            "Export": {
+              "Name": "sls-glue-etl-job1-dev-ServerlessDeploymentBucketName"
+            }
+          }
+        }
+      }
+    },
+    "custom": {
+      "s3BucketName": "glue-etl-bucket9",
+      "s3Sync": [
+        {
+          "bucketName": "glue-etl-bucket9",
+          "localDir": "GlueScripts",
+          "bucketPrefix": "code/"
+        },
+        {
+          "bucketName": "glue-etl-bucket9",
+          "localDir": "dependencies",
+          "bucketPrefix": "dependencies/"
+        }
+      ]
+    },
+    "plugins": [
+      "serverless-s3-sync"
+    ],
+    "pluginsData": {},
+    "functions": {},
+    "resources": {
+      "Resources": {
+        "GlueS3Bucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "BucketName": "glue-etl-bucket9"
+          }
+        },
+        "GlueExecutionRole": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "RoleName": "GlueExecutionRole",
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "glue.amazonaws.com"
+                  },
+                  "Action": "sts:AssumeRole"
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": "GlueJobS3AccessPolicy",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "s3:*"
+                      ],
+                      "Resource": [
+                        "arn:aws:s3:::glue-etl-bucket9",
+                        "arn:aws:s3:::glue-etl-bucket9/*"
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "glue:*"
+                      ],
+                      "Resource": "*"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "GlueETLJobUsers": {
+          "Type": "AWS::Glue::Job",
+          "Properties": {
+            "Name": "GlueFakeProfilesJob",
+            "Role": "GlueExecutionRole",
+            "Command": {
+              "Name": "glueetl",
+              "ScriptLocation": "s3://glue-etl-bucket9/code/generate_users.py",
+              "PythonVersion": "3"
+            },
+            "DefaultArguments": {
+              "--job-language": "python",
+              "--extra-py-files": "s3://glue-etl-bucket9/dependencies/Faker-36.1.0-py3-none-any.whl",
+              "--S3_BUCKET": "glue-etl-bucket9",
+              "--S3_OUTPUT_PATH": "output/users"
+            },
+            "GlueVersion": "5.0",
+            "WorkerType": "G.1X",
+            "NumberOfWorkers": 10
+          }
+        },
+        "GlueETLJobTransactions": {
+          "Type": "AWS::Glue::Job",
+          "Properties": {
+            "Name": "GlueGenerateTransactionsJob",
+            "Role": "GlueExecutionRole",
+            "Command": {
+              "Name": "glueetl",
+              "ScriptLocation": "s3://glue-etl-bucket9/code/generate_transactions.py"
+            },
+            "DefaultArguments": {
+              "--job-language": "python",
+              "--extra-py-files": "s3://glue-etl-bucket9/dependencies/Faker-36.1.0-py3-none-any.whl",
+              "--S3_BUCKET": "glue-etl-bucket9",
+              "--S3_OUTPUT_PATH": "output/transactions"
+            },
+            "GlueVersion": "5.0",
+            "WorkerType": "G.1X",
+            "NumberOfWorkers": 10
+          }
+        },
+        "GlueETLJobTransactionSequencesAmt": {
+          "Type": "AWS::Glue::Job",
+          "Properties": {
+            "Name": "GlueGenerateTransactionSequencesAmtJob",
+            "Role": "GlueExecutionRole",
+            "Command": {
+              "Name": "glueetl",
+              "ScriptLocation": "s3://glue-etl-bucket9/code/generate_trnasaction_sequences_amt.py"
+            },
+            "DefaultArguments": {
+              "--job-language": "python",
+              "--extra-py-files": "s3://glue-etl-bucket9/dependencies/Faker-36.1.0-py3-none-any.whl",
+              "--S3_BUCKET": "glue-etl-bucket9",
+              "--S3_OUTPUT_PATH": "output/transactionsequencesamt"
+            },
+            "GlueVersion": "5.0",
+            "WorkerType": "G.1X",
+            "NumberOfWorkers": 10
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless",
+    "initialServerlessConfig": {
+      "org": "deftsquad9",
+      "app": "gluejob",
+      "service": "glue-etl-job1",
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      },
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      }
+    },
+    "app": "gluejob",
+    "appId": null,
+    "org": "deftsquad9",
+    "orgId": null,
+    "layers": {}
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/glue-etl-job1/dev/1741719533177-2025-03-11T18:58:53.177Z",
+    "artifact": ""
+  }
+}
